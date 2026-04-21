@@ -8,11 +8,12 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class HistoryViewModel @Inject constructor(
-    repository: PottyRepository
+    private val repository: PottyRepository
 ) : ViewModel() {
 
     val logs: StateFlow<List<PottyLog>> = repository.getLogs()
@@ -21,4 +22,10 @@ class HistoryViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+
+    fun deleteLog(log: PottyLog) {
+        viewModelScope.launch {
+            repository.deleteLog(log)
+        }
+    }
 }

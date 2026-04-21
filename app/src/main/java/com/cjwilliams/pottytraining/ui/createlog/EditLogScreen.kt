@@ -3,23 +3,21 @@ package com.cjwilliams.pottytraining.ui.createlog
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.cjwilliams.pottytraining.R
 
 @Composable
-fun CreateLogScreen(
-    onLogSaved: (Boolean) -> Unit,
-    viewModel: CreateLogViewModel = hiltViewModel()
+fun EditLogScreen(
+    onLogUpdated: () -> Unit,
+    viewModel: EditLogViewModel = hiltViewModel()
 ) {
     val note by viewModel.note.collectAsStateWithLifecycle()
     val isAccident by viewModel.isAccident.collectAsStateWithLifecycle()
     val type by viewModel.type.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
-        viewModel.logSavedEvent.collect { isAccident ->
-            onLogSaved(isAccident)
+        viewModel.logUpdatedEvent.collect {
+            onLogUpdated()
         }
     }
 
@@ -30,7 +28,7 @@ fun CreateLogScreen(
         onAccidentChange = viewModel::onAccidentChange,
         type = type,
         onTypeChange = viewModel::onTypeChange,
-        onSave = viewModel::saveLog,
-        buttonText = stringResource(R.string.create_log_button)
+        onSave = viewModel::updateLog,
+        buttonText = "Update Log"
     )
 }

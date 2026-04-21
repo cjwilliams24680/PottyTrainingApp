@@ -31,6 +31,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.cjwilliams.pottytraining.ui.createlog.CreateLogScreen
+import com.cjwilliams.pottytraining.ui.createlog.EditLogScreen
 import com.cjwilliams.pottytraining.ui.createlog.SuccessScreen
 import com.cjwilliams.pottytraining.ui.history.HistoryScreen
 import com.cjwilliams.pottytraining.ui.settings.SettingsScreen
@@ -48,6 +49,8 @@ sealed interface Route {
     data object Settings : Route
     @Serializable
     data class Success(val isAccident: Boolean) : Route
+    @Serializable
+    data class EditLog(val logId: Int) : Route
 }
 
 data class TopLevelRoute<T : Any>(
@@ -116,7 +119,11 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable<Route.History> {
-                            HistoryScreen()
+                            HistoryScreen(
+                                onEditLog = { logId ->
+                                    navController.navigate(Route.EditLog(logId))
+                                }
+                            )
                         }
                         composable<Route.Settings> {
                             SettingsScreen()
@@ -129,6 +136,13 @@ class MainActivity : ComponentActivity() {
                                     navController.navigate(Route.History) {
                                         popUpTo(Route.CreateLog) { inclusive = false }
                                     }
+                                }
+                            )
+                        }
+                        composable<Route.EditLog> {
+                            EditLogScreen(
+                                onLogUpdated = {
+                                    navController.popBackStack()
                                 }
                             )
                         }
