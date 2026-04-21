@@ -1,6 +1,7 @@
 package com.cjwilliams.pottytraining
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -28,7 +29,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.cjwilliams.pottytraining.ui.createlog.CreateLogScreen
+import com.cjwilliams.pottytraining.ui.createlog.SuccessScreen
 import com.cjwilliams.pottytraining.ui.history.HistoryScreen
 import com.cjwilliams.pottytraining.ui.settings.SettingsScreen
 import com.cjwilliams.pottytraining.ui.theme.PottyTrainingTheme
@@ -43,6 +46,8 @@ sealed interface Route {
     data object History : Route
     @Serializable
     data object Settings : Route
+    @Serializable
+    data class Success(val isAccident: Boolean) : Route
 }
 
 data class TopLevelRoute<T : Any>(
@@ -84,6 +89,7 @@ class MainActivity : ComponentActivity() {
                                         it.hasRoute(topLevelRoute.route::class)
                                     } == true,
                                     onClick = {
+                                        Log.d("Navigation", "Tapped ${topLevelRoute.name}")
                                         navController.navigate(topLevelRoute.route) {
                                             popUpTo(navController.graph.findStartDestination().id) {
                                                 saveState = true
@@ -103,13 +109,28 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.padding(innerPadding)
                     ) {
                         composable<Route.CreateLog> {
-                            CreateLogScreen()
+                            CreateLogScreen(
+                                onLogSaved = { isAccident ->
+                                    navController.navigate(Route.Success(isAccident))
+                                }
+                            )
                         }
                         composable<Route.History> {
                             HistoryScreen()
                         }
                         composable<Route.Settings> {
                             SettingsScreen()
+                        }
+                        composable<Route.Success> { backStackEntry ->
+                            val route = backStackEntry.toRoute<Route.Success>()
+                            SuccessScreen(
+                                isAccident = route.isAccident,
+                                onContinue = {
+                                    navController.navigate(Route.History) {
+                                        popUpTo(Route.CreateLog) { inclusive = false }
+                                    }
+                                }
+                            )
                         }
                     }
                 }

@@ -14,6 +14,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,11 +27,18 @@ import com.cjwilliams.pottytraining.domain.PottyType
 
 @Composable
 fun CreateLogScreen(
+    onLogSaved: (Boolean) -> Unit,
     viewModel: CreateLogViewModel = hiltViewModel()
 ) {
     val note by viewModel.note.collectAsStateWithLifecycle()
     val isAccident by viewModel.isAccident.collectAsStateWithLifecycle()
     val type by viewModel.type.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.logSavedEvent.collect { isAccident ->
+            onLogSaved(isAccident)
+        }
+    }
 
     Column(
         modifier = Modifier

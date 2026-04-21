@@ -9,6 +9,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -26,6 +29,9 @@ class CreateLogViewModel @Inject constructor(
     private val _type = MutableStateFlow(PottyType.PEE)
     val type: StateFlow<PottyType> = _type.asStateFlow()
 
+    private val _logSavedEvent = MutableSharedFlow<Boolean>()
+    val logSavedEvent: SharedFlow<Boolean> = _logSavedEvent.asSharedFlow()
+
     fun onNoteChange(newNote: String) {
         _note.value = newNote
     }
@@ -40,17 +46,19 @@ class CreateLogViewModel @Inject constructor(
 
     fun saveLog() {
         viewModelScope.launch {
+            val isAccidentValue = _isAccident.value
             repository.addLog(
                 PottyLog(
                     timestamp = System.currentTimeMillis(),
                     note = _note.value,
-                    isAccident = _isAccident.value,
+                    isAccident = isAccidentValue,
                     type = _type.value
                 )
             )
             _note.value = ""
             _isAccident.value = false
             _type.value = PottyType.PEE
+            _logSavedEvent.emit(isAccidentValue)
         }
     }
 }
