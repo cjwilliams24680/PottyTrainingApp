@@ -19,13 +19,16 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class EditLogViewModel @Inject constructor(
+class PottyLogViewModel @Inject constructor(
     private val repository: PottyRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val editLogRoute = savedStateHandle.toRoute<Route.EditLog>()
-    private val logId = editLogRoute.logId
+    private val logId: Int? = try {
+        savedStateHandle.toRoute<Route.EditLog>().logId
+    } catch (e: Exception) {
+        null
+    }
 
     private val _note = MutableStateFlow("")
     val note: StateFlow<String> = _note.asStateFlow()
@@ -36,18 +39,22 @@ class EditLogViewModel @Inject constructor(
     private val _type = MutableStateFlow(PottyType.PEE)
     val type: StateFlow<PottyType> = _type.asStateFlow()
 
-    private val _logUpdatedEvent = MutableSharedFlow<Unit>()
-    val logUpdatedEvent: SharedFlow<Unit> = _logUpdatedEvent.asSharedFlow()
+    private val _saveEvent = MutableSharedFlow<SaveResult>()
+    val saveEvent: SharedFlow<SaveResult> = _saveEvent.asSharedFlow()
 
     private var originalLog: PottyLog? = null
 
+    val isEditMode: Boolean get() = logId != null
+
     init {
-        viewModelScope.launch {
-            repository.getLogById(logId)?.let { log ->
-                originalLog = log
-                _note.value = log.note
-                _isAccident.value = log.isAccident
-                _type.value = log.type
+        if (logId != null) {
+            viewModelScope.launch {
+                repository.getLogById(logId)?.let { log ->
+                    originalLog = log
+                    _note.value = log.note
+                    _isAccident.value = log.isAccident
+                    _type.value = log.type
+                }
             }
         }
     }
@@ -64,18 +71,34 @@ class EditLogViewModel @Inject constructor(
         _type.value = type
     }
 
-    fun updateLog() {
+    fun save() {
         viewModelScope.launch {
-            originalLog?.let { log ->
+            val isAccidentValue = _isAccident.value
+            if (isEditMode && originalLog != null) {
                 repository.updateLog(
-                    log.copy(
+                    originalLog!!.copy(
                         note = _note.value,
-                        isAccident = _isAccident.value,
+                        isAccident = isAccidentValue,
                         type = _type.value
                     )
                 )
-                _logUpdatedEvent.emit(Unit)
+                _saveEvent.emit(SaveResult.Updated)
+            } else {
+                repository.addLog(
+                    PottyLog(
+                        timestamp = System.currentTimeMillis(),
+                        note = _note.value,
+                        isAccident = isAccidentValue,
+                        type = _type.value
+                    )
+                )
+                _saveEvent.emit(SaveResult.Created(isAccidentValue))
             }
         }
+    }
+
+    sealed interface SaveResult {
+        data class Created(val isAccident: Boolean) : SaveResult
+        data object Updated : SaveResult
     }
 }

@@ -9,15 +9,17 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun EditLogScreen(
     onLogUpdated: () -> Unit,
-    viewModel: EditLogViewModel = hiltViewModel()
+    viewModel: PottyLogViewModel = hiltViewModel()
 ) {
     val note by viewModel.note.collectAsStateWithLifecycle()
     val isAccident by viewModel.isAccident.collectAsStateWithLifecycle()
     val type by viewModel.type.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
-        viewModel.logUpdatedEvent.collect {
-            onLogUpdated()
+        viewModel.saveEvent.collect { result ->
+            if (result is PottyLogViewModel.SaveResult.Updated) {
+                onLogUpdated()
+            }
         }
     }
 
@@ -28,7 +30,7 @@ fun EditLogScreen(
         onAccidentChange = viewModel::onAccidentChange,
         type = type,
         onTypeChange = viewModel::onTypeChange,
-        onSave = viewModel::updateLog,
+        onSave = viewModel::save,
         buttonText = "Update Log"
     )
 }
