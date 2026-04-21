@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">PottyTraining</string>
+    <string name="create_log_title">Create Log</string>
+    <string name="potty_type_label">Type:</string>
+    <string name="is_accident_label">Was it an accident?</string>
+    <string name="note_hint">Note (Optional)</string>
+    <string name="create_log_button">Create Log</string>
+    <string name="potty_type_pee">Pee</string>
+    <string name="potty_type_poo">Poo</string>
+    <string name="potty_type_both">Both</string>
 </resources>
