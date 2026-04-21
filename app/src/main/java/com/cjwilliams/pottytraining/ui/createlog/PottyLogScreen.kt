@@ -9,8 +9,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cjwilliams.pottytraining.R
 
 @Composable
-fun CreateLogScreen(
-    onLogSaved: (Boolean) -> Unit,
+fun PottyLogScreen(
+    onSaveSuccess: (PottyLogViewModel.SaveResult) -> Unit,
     viewModel: PottyLogViewModel = hiltViewModel()
 ) {
     val note by viewModel.note.collectAsStateWithLifecycle()
@@ -19,9 +19,7 @@ fun CreateLogScreen(
 
     LaunchedEffect(Unit) {
         viewModel.saveEvent.collect { result ->
-            if (result is PottyLogViewModel.SaveResult.Created) {
-                onLogSaved(result.isAccident)
-            }
+            onSaveSuccess(result)
         }
     }
 
@@ -33,6 +31,6 @@ fun CreateLogScreen(
         type = type,
         onTypeChange = viewModel::onTypeChange,
         onSave = viewModel::save,
-        buttonText = stringResource(R.string.create_log_button)
+        buttonText = if (viewModel.isEditMode) "Update Log" else stringResource(R.string.create_log_button)
     )
 }

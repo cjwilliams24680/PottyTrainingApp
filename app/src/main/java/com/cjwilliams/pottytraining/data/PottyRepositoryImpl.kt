@@ -15,8 +15,8 @@ class PottyRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun addLog(log: PottyLog) {
-        pottyDao.insertLog(log.toEntity())
+    override suspend fun upsertLog(log: PottyLog) {
+        pottyDao.upsertLog(log.toEntity())
     }
 
     override suspend fun deleteLog(log: PottyLog) {
@@ -25,9 +25,5 @@ class PottyRepositoryImpl @Inject constructor(
 
     override suspend fun getLogById(id: Int): PottyLog? {
         return pottyDao.getLogById(id)?.toDomain()
-    }
-
-    override suspend fun updateLog(log: PottyLog) {
-        pottyDao.updateLog(log.toEntity())
     }
 }

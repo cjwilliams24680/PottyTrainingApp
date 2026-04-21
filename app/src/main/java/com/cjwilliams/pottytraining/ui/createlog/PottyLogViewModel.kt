@@ -74,31 +74,24 @@ class PottyLogViewModel @Inject constructor(
     fun save() {
         viewModelScope.launch {
             val isAccidentValue = _isAccident.value
-            if (isEditMode && originalLog != null) {
-                repository.updateLog(
-                    originalLog!!.copy(
-                        note = _note.value,
-                        isAccident = isAccidentValue,
-                        type = _type.value
-                    )
+            val logToSave = if (isEditMode && originalLog != null) {
+                originalLog!!.copy(
+                    note = _note.value,
+                    isAccident = isAccidentValue,
+                    type = _type.value
                 )
-                _saveEvent.emit(SaveResult.Updated)
             } else {
-                repository.addLog(
-                    PottyLog(
-                        timestamp = System.currentTimeMillis(),
-                        note = _note.value,
-                        isAccident = isAccidentValue,
-                        type = _type.value
-                    )
+                PottyLog(
+                    timestamp = System.currentTimeMillis(),
+                    note = _note.value,
+                    isAccident = isAccidentValue,
+                    type = _type.value
                 )
-                _saveEvent.emit(SaveResult.Created(isAccidentValue))
             }
+            repository.upsertLog(logToSave)
+            _saveEvent.emit(SaveResult(isAccidentValue))
         }
     }
 
-    sealed interface SaveResult {
-        data class Created(val isAccident: Boolean) : SaveResult
-        data object Updated : SaveResult
-    }
+    data class SaveResult(val isAccident: Boolean)
 }

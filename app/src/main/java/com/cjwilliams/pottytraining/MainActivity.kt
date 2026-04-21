@@ -30,8 +30,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.cjwilliams.pottytraining.ui.createlog.CreateLogScreen
-import com.cjwilliams.pottytraining.ui.createlog.EditLogScreen
+import com.cjwilliams.pottytraining.ui.createlog.PottyLogScreen
+import com.cjwilliams.pottytraining.ui.createlog.PottyLogViewModel
 import com.cjwilliams.pottytraining.ui.createlog.SuccessScreen
 import com.cjwilliams.pottytraining.ui.history.HistoryScreen
 import com.cjwilliams.pottytraining.ui.settings.SettingsScreen
@@ -112,9 +112,9 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.padding(innerPadding)
                     ) {
                         composable<Route.CreateLog> {
-                            CreateLogScreen(
-                                onLogSaved = { isAccident ->
-                                    navController.navigate(Route.Success(isAccident))
+                            PottyLogScreen(
+                                onSaveSuccess = { result ->
+                                    navController.navigate(Route.Success(result.isAccident))
                                 }
                             )
                         }
@@ -140,8 +140,8 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable<Route.EditLog> {
-                            EditLogScreen(
-                                onLogUpdated = {
+                            PottyLogScreen(
+                                onSaveSuccess = { result ->
                                     navController.popBackStack()
                                 }
                             )

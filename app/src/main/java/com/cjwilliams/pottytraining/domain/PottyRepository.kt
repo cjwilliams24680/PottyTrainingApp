@@ -4,8 +4,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface PottyRepository {
     fun getLogs(): Flow<List<PottyLog>>
-    suspend fun addLog(log: PottyLog)
+    suspend fun upsertLog(log: PottyLog)
     suspend fun deleteLog(log: PottyLog)
     suspend fun getLogById(id: Int): PottyLog?
-    suspend fun updateLog(log: PottyLog)
 }
