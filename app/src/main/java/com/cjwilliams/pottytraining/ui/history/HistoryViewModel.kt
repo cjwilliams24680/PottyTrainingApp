@@ -7,8 +7,12 @@ import com.cjwilliams.pottytraining.domain.PottyRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -16,11 +20,18 @@ class HistoryViewModel @Inject constructor(
     private val repository: PottyRepository
 ) : ViewModel() {
 
-    val logs: StateFlow<List<PottyLog>> = repository.getLogs()
+    private val dateFormatter = SimpleDateFormat("EEEE, MMM dd", Locale.getDefault())
+
+    val groupedLogs: StateFlow<Map<String, List<PottyLog>>> = repository.getLogs()
+        .map { logs ->
+            logs.groupBy { log ->
+                dateFormatter.format(Date(log.timestamp))
+            }
+        }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
+            initialValue = emptyMap()
         )
 
     fun deleteLog(log: PottyLog) {

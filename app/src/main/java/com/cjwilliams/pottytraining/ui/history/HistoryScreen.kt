@@ -1,5 +1,7 @@
 package com.cjwilliams.pottytraining.ui.history
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -39,24 +42,29 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun HistoryScreen(
     onEditLog: (Int) -> Unit,
     viewModel: HistoryViewModel = hiltViewModel()
 ) {
-    val logs by viewModel.logs.collectAsStateWithLifecycle()
+    val groupedLogs by viewModel.groupedLogs.collectAsStateWithLifecycle()
     var selectedLog by remember { mutableStateOf<PottyLog?>(null) }
     val sheetState = rememberModalBottomSheetState()
 
     LazyColumn(
         modifier = Modifier.fillMaxSize()
     ) {
-        items(logs) { log ->
-            PottyLogItem(
-                log = log,
-                onClick = { selectedLog = log }
-            )
+        groupedLogs.forEach { (date, logs) ->
+            stickyHeader {
+                HistoryHeader(date)
+            }
+            items(logs) { log ->
+                PottyLogItem(
+                    log = log,
+                    onClick = { selectedLog = log }
+                )
+            }
         }
     }
 
@@ -93,6 +101,21 @@ fun HistoryScreen(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun HistoryHeader(date: String) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surfaceVariant
+    ) {
+        Text(
+            text = date,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 

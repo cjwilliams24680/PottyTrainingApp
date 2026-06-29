@@ -3,7 +3,6 @@ package com.cjwilliams.pottytraining.ui.createlog
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
 import com.cjwilliams.pottytraining.Route
 import com.cjwilliams.pottytraining.domain.PottyLog
 import com.cjwilliams.pottytraining.domain.PottyRepository
@@ -24,11 +23,7 @@ class PottyLogViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val logId: Int? = try {
-        savedStateHandle.toRoute<Route.EditLog>().logId
-    } catch (e: Exception) {
-        null
-    }
+    private val logId: Int? = savedStateHandle.get<Int>("logId")
 
     private val _note = MutableStateFlow("")
     val note: StateFlow<String> = _note.asStateFlow()
@@ -90,6 +85,12 @@ class PottyLogViewModel @Inject constructor(
             }
             repository.upsertLog(logToSave)
             _saveEvent.emit(SaveResult(isAccidentValue))
+
+            if (!isEditMode) {
+                _note.value = ""
+                _isAccident.value = false
+                _type.value = PottyType.PEE
+            }
         }
     }
 

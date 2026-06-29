@@ -134,7 +134,9 @@ class MainActivity : ComponentActivity() {
                                 isAccident = route.isAccident,
                                 onContinue = {
                                     navController.navigate(Route.History) {
-                                        popUpTo(Route.CreateLog) { inclusive = false }
+                                        popUpTo(navController.graph.findStartDestination().id) {
+                                            inclusive = false
+                                        }
                                     }
                                 }
                             )
