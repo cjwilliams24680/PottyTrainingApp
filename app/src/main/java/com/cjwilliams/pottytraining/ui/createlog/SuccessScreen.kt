@@ -18,8 +18,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.cjwilliams.pottytraining.R
 
 @Composable
 fun SuccessScreen(
@@ -43,7 +45,7 @@ fun SuccessScreen(
         Spacer(modifier = Modifier.height(24.dp))
         
         Text(
-            text = if (isAccident) "Good try!" else "Great job!",
+            text = if (isAccident) stringResource(R.string.success_accident_headline) else stringResource(R.string.success_great_job_headline),
             style = MaterialTheme.typography.headlineLarge,
             textAlign = TextAlign.Center
         )
@@ -52,8 +54,8 @@ fun SuccessScreen(
         
         Text(
             text = if (isAccident) 
-                "It's okay to have accidents. We'll try again next time!" 
-                else "You did it! Keep up the amazing work!",
+                stringResource(R.string.success_accident_body) 
+                else stringResource(R.string.success_great_job_body),
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center
         )
@@ -64,7 +66,7 @@ fun SuccessScreen(
             onClick = onContinue,
             modifier = Modifier.fillMaxSize(0.6f)
         ) {
-            Text("Continue")
+            Text(stringResource(R.string.continue_button))
         }
     }
 }

@@ -33,11 +33,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.cjwilliams.pottytraining.R
 import com.cjwilliams.pottytraining.domain.PottyLog
+import com.cjwilliams.pottytraining.domain.PottyType
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -79,12 +81,12 @@ fun HistoryScreen(
                     .padding(bottom = 32.dp)
             ) {
                 Text(
-                    text = "Log Options",
+                    text = stringResource(R.string.log_options_title),
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(16.dp)
                 )
                 ListItem(
-                    headlineContent = { Text("Edit Log") },
+                    headlineContent = { Text(stringResource(R.string.edit_log_action)) },
                     leadingContent = { Icon(Icons.Default.Edit, contentDescription = null) },
                     modifier = Modifier.clickable {
                         selectedLog?.let { onEditLog(it.id) }
@@ -92,7 +94,7 @@ fun HistoryScreen(
                     }
                 )
                 ListItem(
-                    headlineContent = { Text("Delete Log") },
+                    headlineContent = { Text(stringResource(R.string.delete_log_action)) },
                     leadingContent = { Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error) },
                     modifier = Modifier.clickable {
                         selectedLog?.let { viewModel.deleteLog(it) }
@@ -140,15 +142,20 @@ fun PottyLogItem(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
+                val typeLabel = when (log.type) {
+                    PottyType.PEE -> stringResource(R.string.potty_type_pee)
+                    PottyType.POO -> stringResource(R.string.potty_type_poo)
+                    PottyType.BOTH -> stringResource(R.string.potty_type_both)
+                }
                 Text(
-                    text = log.type.name,
+                    text = typeLabel,
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 if (log.isAccident) {
                     Text(
-                        text = "(Accident)",
+                        text = stringResource(R.string.accident_label),
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.error
                     )

@@ -31,6 +31,6 @@ fun PottyLogScreen(
         type = type,
         onTypeChange = viewModel::onTypeChange,
         onSave = viewModel::save,
-        buttonText = if (viewModel.isEditMode) "Update Log" else stringResource(R.string.create_log_button)
+        buttonText = if (viewModel.isEditMode) stringResource(R.string.update_log_button) else stringResource(R.string.create_log_button)
     )
 }

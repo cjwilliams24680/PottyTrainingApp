@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -46,6 +47,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentDestination = navBackStackEntry?.destination
+                val titleRes = currentDestination?.getTitle()
                 val isTopLevel = TOP_LEVEL_ROUTES.any { topLevelRoute ->
                     currentDestination?.hasRoute(topLevelRoute.route::class) == true
                 }
@@ -53,17 +55,17 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     topBar = {
-                        currentDestination?.getTitle()?.let { title ->
+                        titleRes?.let { resId ->
                             TopAppBar(
                                 title = {
-                                    Text(title)
+                                    Text(stringResource(resId))
                                 },
                                 navigationIcon = {
                                     if (!isTopLevel && navController.previousBackStackEntry != null) {
                                         IconButton(onClick = { navController.navigateUp() }) {
                                             Icon(
                                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                                contentDescription = "Back"
+                                                contentDescription = stringResource(R.string.back_button_content_description)
                                             )
                                         }
                                     }
@@ -78,15 +80,15 @@ class MainActivity : ComponentActivity() {
                                     icon = {
                                         Icon(
                                             topLevelRoute.icon,
-                                            contentDescription = topLevelRoute.name
+                                            contentDescription = stringResource(topLevelRoute.nameRes)
                                         )
                                     },
-                                    label = { Text(topLevelRoute.name) },
+                                    label = { Text(stringResource(topLevelRoute.nameRes)) },
                                     selected = currentDestination?.hierarchy?.any {
                                         it.hasRoute(topLevelRoute.route::class)
                                     } == true,
                                     onClick = {
-                                        Log.d("Navigation", "Tapped ${topLevelRoute.name}")
+                                        Log.d("Navigation", "Tapped ${topLevelRoute.javaClass.simpleName}")
                                         navController.navigate(topLevelRoute.route) {
                                             popUpTo(navController.graph.findStartDestination().id) {
                                                 saveState = true
@@ -149,12 +151,12 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private fun NavDestination.getTitle(): String? =
+private fun NavDestination.getTitle(): Int? =
     when {
-        hasRoute<Route.CreateLog>() -> "Create Log"
-        hasRoute<Route.History>() -> "History"
-        hasRoute<Route.Settings>() -> "Settings"
-        hasRoute<Route.Success>() -> "Success"
-        hasRoute<Route.EditLog>() -> "Edit Log"
+        hasRoute<Route.CreateLog>() -> R.string.create_log_title
+        hasRoute<Route.History>() -> R.string.history_title
+        hasRoute<Route.Settings>() -> R.string.settings_title
+        hasRoute<Route.Success>() -> R.string.success_title
+        hasRoute<Route.EditLog>() -> R.string.edit_log_title
         else -> null
     }

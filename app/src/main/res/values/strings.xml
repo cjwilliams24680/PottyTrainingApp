@@ -1,11 +1,33 @@
 <resources>
     <string name="app_name">PottyTraining</string>
     <string name="create_log_title">Create Log</string>
+    <string name="history_title">History</string>
+    <string name="settings_title">Settings</string>
+    <string name="success_title">Success</string>
+    <string name="edit_log_title">Edit Log</string>
+
     <string name="potty_type_label">Type:</string>
     <string name="is_accident_label">Was it an accident?</string>
     <string name="note_hint">Note (Optional)</string>
     <string name="create_log_button">Create Log</string>
+    <string name="update_log_button">Update Log</string>
+
     <string name="potty_type_pee">Pee</string>
     <string name="potty_type_poo">Poo</string>
     <string name="potty_type_both">Both</string>
+
+    <string name="back_button_content_description">Back</string>
+
+    <string name="success_accident_headline">Good try!</string>
+    <string name="success_great_job_headline">Great job!</string>
+    <string name="success_accident_body">It\'s okay to have accidents. We\'ll try again next time!</string>
+    <string name="success_great_job_body">You did it! Keep up the amazing work!</string>
+    <string name="continue_button">Continue</string>
+
+    <string name="log_options_title">Log Options</string>
+    <string name="edit_log_action">Edit Log</string>
+    <string name="delete_log_action">Delete Log</string>
+    <string name="accident_label">(Accident)</string>
+
+    <string name="settings_coming_soon">Settings Screen (Coming Soon)</string>
 </resources>
