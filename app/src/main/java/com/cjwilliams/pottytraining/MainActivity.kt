@@ -1,7 +1,6 @@
 package com.cjwilliams.pottytraining
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -35,6 +34,7 @@ import com.cjwilliams.pottytraining.ui.history.HistoryScreen
 import com.cjwilliams.pottytraining.ui.settings.SettingsScreen
 import com.cjwilliams.pottytraining.ui.theme.PottyTrainingTheme
 import dagger.hilt.android.AndroidEntryPoint
+import timber.log.Timber
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -88,7 +88,7 @@ class MainActivity : ComponentActivity() {
                                         it.hasRoute(topLevelRoute.route::class)
                                     } == true,
                                     onClick = {
-                                        Log.d("Navigation", "Tapped ${topLevelRoute.javaClass.simpleName}")
+                                        Timber.d("Tapped ${topLevelRoute.javaClass.simpleName}")
                                         navController.navigate(topLevelRoute.route) {
                                             popUpTo(navController.graph.findStartDestination().id) {
                                                 saveState = true
