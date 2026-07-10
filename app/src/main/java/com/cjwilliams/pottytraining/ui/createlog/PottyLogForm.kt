@@ -23,14 +23,11 @@ import com.cjwilliams.pottytraining.domain.PottyType
 
 @Composable
 fun PottyLogForm(
-    note: String,
+    uiState: PottyLogUiState,
     onNoteChange: (String) -> Unit,
-    isAccident: Boolean,
     onAccidentChange: (Boolean) -> Unit,
-    type: PottyType,
     onTypeChange: (PottyType) -> Unit,
     onSave: () -> Unit,
-    buttonText: String,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -48,7 +45,7 @@ fun PottyLogForm(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 RadioButton(
-                    selected = (type == pottyType),
+                    selected = (uiState.type == pottyType),
                     onClick = { onTypeChange(pottyType) }
                 )
                 val label = when (pottyType) {
@@ -64,7 +61,7 @@ fun PottyLogForm(
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             Checkbox(
-                checked = isAccident,
+                checked = uiState.isAccident,
                 onCheckedChange = onAccidentChange
             )
             Text(text = stringResource(R.string.is_accident_label))
@@ -73,7 +70,7 @@ fun PottyLogForm(
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
-            value = note,
+            value = uiState.note,
             onValueChange = onNoteChange,
             label = { Text(stringResource(R.string.note_hint)) },
             modifier = Modifier.fillMaxWidth()
@@ -83,6 +80,11 @@ fun PottyLogForm(
             onClick = onSave,
             modifier = Modifier.fillMaxWidth()
         ) {
+            val buttonText = if (uiState.isEditMode) {
+                stringResource(R.string.update_log_button)
+            } else {
+                stringResource(R.string.create_log_button)
+            }
             Text(buttonText)
         }
     }

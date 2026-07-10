@@ -23,7 +23,7 @@ class PottyRepositoryImpl @Inject constructor(
         pottyDao.deleteLog(log.id)
     }
 
-    override suspend fun getLogById(id: Int): PottyLog? {
-        return pottyDao.getLogById(id)?.toDomain()
+    override fun getLogById(id: Int): Flow<PottyLog?> {
+        return pottyDao.getLogById(id).map { it?.toDomain() }
     }
 }

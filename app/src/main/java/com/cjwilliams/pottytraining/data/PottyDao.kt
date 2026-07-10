@@ -18,5 +18,5 @@ interface PottyDao {
     suspend fun deleteLog(id: Int)
 
     @Query("SELECT * FROM potty_logs WHERE id = :id")
-    suspend fun getLogById(id: Int): PottyEntity?
+    fun getLogById(id: Int): Flow<PottyEntity?>
 }

@@ -13,8 +13,18 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+data class PottyLogUiState(
+    val note: String = "",
+    val isAccident: Boolean = false,
+    val type: PottyType = PottyType.PEE,
+    val isEditMode: Boolean = false,
+    val isLoading: Boolean = false
+)
 
 @HiltViewModel
 class PottyLogViewModel @Inject constructor(
@@ -24,71 +34,73 @@ class PottyLogViewModel @Inject constructor(
 
     private val logId: Int? = savedStateHandle.get<Int>("logId")
 
-    private val _note = MutableStateFlow("")
-    val note: StateFlow<String> = _note.asStateFlow()
-
-    private val _isAccident = MutableStateFlow(false)
-    val isAccident: StateFlow<Boolean> = _isAccident.asStateFlow()
-
-    private val _type = MutableStateFlow(PottyType.PEE)
-    val type: StateFlow<PottyType> = _type.asStateFlow()
+    private val _uiState = MutableStateFlow(PottyLogUiState(isEditMode = logId != null))
+    val uiState: StateFlow<PottyLogUiState> = _uiState.asStateFlow()
 
     private val _saveEvent = MutableSharedFlow<SaveResult>()
     val saveEvent: SharedFlow<SaveResult> = _saveEvent.asSharedFlow()
 
     private var originalLog: PottyLog? = null
 
-    val isEditMode: Boolean get() = logId != null
-
     init {
-        if (logId != null) {
+        logId?.let { id ->
             viewModelScope.launch {
-                repository.getLogById(logId)?.let { log ->
+                _uiState.update { it.copy(isLoading = true) }
+                repository.getLogById(id).firstOrNull()?.let { log ->
                     originalLog = log
-                    _note.value = log.note
-                    _isAccident.value = log.isAccident
-                    _type.value = log.type
-                }
+                    _uiState.update { 
+                        it.copy(
+                            note = log.note,
+                            isAccident = log.isAccident,
+                            type = log.type,
+                            isLoading = false
+                        )
+                    }
+                } ?: _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
 
     fun onNoteChange(newNote: String) {
-        _note.value = newNote
+        _uiState.update { it.copy(note = newNote) }
     }
 
     fun onAccidentChange(isAccident: Boolean) {
-        _isAccident.value = isAccident
+        _uiState.update { it.copy(isAccident = isAccident) }
     }
 
     fun onTypeChange(type: PottyType) {
-        _type.value = type
+        _uiState.update { it.copy(type = type) }
     }
 
     fun save() {
         viewModelScope.launch {
-            val isAccidentValue = _isAccident.value
-            val logToSave = if (isEditMode && originalLog != null) {
+            val currentState = _uiState.value
+            val logToSave = if (currentState.isEditMode && originalLog != null) {
                 originalLog!!.copy(
-                    note = _note.value,
-                    isAccident = isAccidentValue,
-                    type = _type.value
+                    note = currentState.note,
+                    isAccident = currentState.isAccident,
+                    type = currentState.type
                 )
             } else {
                 PottyLog(
                     timestamp = System.currentTimeMillis(),
-                    note = _note.value,
-                    isAccident = isAccidentValue,
-                    type = _type.value
+                    note = currentState.note,
+                    isAccident = currentState.isAccident,
+                    type = currentState.type
                 )
             }
             repository.upsertLog(logToSave)
-            _saveEvent.emit(SaveResult(isAccidentValue))
+            _saveEvent.emit(SaveResult(currentState.isAccident))
 
-            if (!isEditMode) {
-                _note.value = ""
-                _isAccident.value = false
-                _type.value = PottyType.PEE
+            if (!currentState.isEditMode) {
+                _uiState.update { 
+                    it.copy(
+                        note = "",
+                        isAccident = false,
+                        type = PottyType.PEE
+                    )
+                }
             }
         }
     }

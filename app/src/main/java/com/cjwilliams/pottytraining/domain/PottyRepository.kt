@@ -6,5 +6,5 @@ interface PottyRepository {
     fun getLogs(): Flow<List<PottyLog>>
     suspend fun upsertLog(log: PottyLog)
     suspend fun deleteLog(log: PottyLog)
-    suspend fun getLogById(id: Int): PottyLog?
+    fun getLogById(id: Int): Flow<PottyLog?>
 }
