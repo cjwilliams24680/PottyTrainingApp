@@ -5,23 +5,21 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -31,54 +29,50 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.cjwilliams.pottytraining.ui.createlog.PottyLogScreen
-import com.cjwilliams.pottytraining.ui.createlog.PottyLogViewModel
 import com.cjwilliams.pottytraining.ui.createlog.SuccessScreen
 import com.cjwilliams.pottytraining.ui.history.HistoryScreen
 import com.cjwilliams.pottytraining.ui.settings.SettingsScreen
 import com.cjwilliams.pottytraining.ui.theme.PottyTrainingTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.serialization.Serializable
-
-@Serializable
-sealed interface Route {
-    @Serializable
-    data object CreateLog : Route
-    @Serializable
-    data object History : Route
-    @Serializable
-    data object Settings : Route
-    @Serializable
-    data class Success(val isAccident: Boolean) : Route
-    @Serializable
-    data class EditLog(val logId: Int) : Route
-}
-
-data class TopLevelRoute<T : Any>(
-    val name: String,
-    val route: T,
-    val icon: ImageVector
-)
-
-val TOP_LEVEL_ROUTES = listOf(
-    TopLevelRoute("Create Log", Route.CreateLog, Icons.Default.Add),
-    TopLevelRoute("History", Route.History, Icons.Default.History),
-    TopLevelRoute("Settings", Route.Settings, Icons.Default.Settings)
-)
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             PottyTrainingTheme {
                 val navController = rememberNavController()
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentDestination = navBackStackEntry?.destination
+                val isTopLevel = TOP_LEVEL_ROUTES.any { topLevelRoute ->
+                    currentDestination?.hasRoute(topLevelRoute.route::class) == true
+                }
+
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
+                    topBar = {
+                        currentDestination?.getTitle()?.let { title ->
+                            TopAppBar(
+                                title = {
+                                    Text(title)
+                                },
+                                navigationIcon = {
+                                    if (!isTopLevel && navController.previousBackStackEntry != null) {
+                                        IconButton(onClick = { navController.navigateUp() }) {
+                                            Icon(
+                                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                                contentDescription = "Back"
+                                            )
+                                        }
+                                    }
+                                }
+                            )
+                        }
+                    },
                     bottomBar = {
                         NavigationBar {
-                            val navBackStackEntry by navController.currentBackStackEntryAsState()
-                            val currentDestination = navBackStackEntry?.destination
                             TOP_LEVEL_ROUTES.forEach { topLevelRoute ->
                                 NavigationBarItem(
                                     icon = {
@@ -155,9 +149,12 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Composable
-fun ScreenPlaceholder(name: String, modifier: Modifier = Modifier) {
-    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text = name)
+private fun NavDestination.getTitle(): String? =
+    when {
+        hasRoute<Route.CreateLog>() -> "Create Log"
+        hasRoute<Route.History>() -> "History"
+        hasRoute<Route.Settings>() -> "Settings"
+        hasRoute<Route.Success>() -> "Success"
+        hasRoute<Route.EditLog>() -> "Edit Log"
+        else -> null
     }
-}

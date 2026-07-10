@@ -3,7 +3,6 @@ package com.cjwilliams.pottytraining.ui.createlog
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cjwilliams.pottytraining.Route
 import com.cjwilliams.pottytraining.domain.PottyLog
 import com.cjwilliams.pottytraining.domain.PottyRepository
 import com.cjwilliams.pottytraining.domain.PottyType
