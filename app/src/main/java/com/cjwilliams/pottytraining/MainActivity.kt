@@ -137,8 +137,10 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
-                        composable<Route.EditLog> {
+                        composable<Route.EditLog> { backStackEntry ->
+                            val route = backStackEntry.toRoute<Route.EditLog>()
                             PottyLogScreen(
+                                logId = route.logId,
                                 onSaveSuccess = { result ->
                                     navController.popBackStack()
                                 }

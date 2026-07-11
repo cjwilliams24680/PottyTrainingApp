@@ -1,11 +1,11 @@
 package com.cjwilliams.pottytraining.ui.createlog
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cjwilliams.pottytraining.domain.PottyLog
 import com.cjwilliams.pottytraining.domain.PottyRepository
 import com.cjwilliams.pottytraining.domain.PottyType
+import com.cjwilliams.pottytraining.ui.createlog.PottyLogUiState.Uninitialized
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,23 +18,25 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-data class PottyLogUiState(
-    val note: String = "",
-    val isAccident: Boolean = false,
-    val type: PottyType = PottyType.PEE,
-    val isEditMode: Boolean = false,
-    val isLoading: Boolean = false
-)
+sealed interface PottyLogUiState {
+
+    data object Uninitialized : PottyLogUiState
+    data object Loading : PottyLogUiState
+    data class Loaded(
+        val note: String = "",
+        val isAccident: Boolean = false,
+        val type: PottyType = PottyType.PEE,
+        val isEditMode: Boolean = false
+    ) : PottyLogUiState
+    data object BlockingError : PottyLogUiState
+}
 
 @HiltViewModel
 class PottyLogViewModel @Inject constructor(
-    private val repository: PottyRepository,
-    savedStateHandle: SavedStateHandle
+    private val repository: PottyRepository
 ) : ViewModel() {
 
-    private val logId: Int? = savedStateHandle.get<Int>("logId")
-
-    private val _uiState = MutableStateFlow(PottyLogUiState(isEditMode = logId != null))
+    private val _uiState = MutableStateFlow<PottyLogUiState>(Uninitialized)
     val uiState: StateFlow<PottyLogUiState> = _uiState.asStateFlow()
 
     private val _saveEvent = MutableSharedFlow<SaveResult>()
@@ -42,40 +44,52 @@ class PottyLogViewModel @Inject constructor(
 
     private var originalLog: PottyLog? = null
 
-    init {
-        logId?.let { id ->
+    fun initialize(id: Int?) {
+        if (uiState.value == Uninitialized) return
+
+        if (id != null) {
+            _uiState.value = PottyLogUiState.Loading
             viewModelScope.launch {
-                _uiState.update { it.copy(isLoading = true) }
                 repository.getLogById(id).firstOrNull()?.let { log ->
                     originalLog = log
-                    _uiState.update { 
-                        it.copy(
-                            note = log.note,
-                            isAccident = log.isAccident,
-                            type = log.type,
-                            isLoading = false
-                        )
-                    }
-                } ?: _uiState.update { it.copy(isLoading = false) }
+                    _uiState.value = PottyLogUiState.Loaded(
+                        note = log.note,
+                        isAccident = log.isAccident,
+                        type = log.type,
+                        isEditMode = true
+                    )
+                } ?: run {
+                    _uiState.value = PottyLogUiState.BlockingError
+                }
             }
+        } else {
+            _uiState.value = PottyLogUiState.Loaded(isEditMode = false)
         }
     }
 
     fun onNoteChange(newNote: String) {
-        _uiState.update { it.copy(note = newNote) }
+        updateLoadedState { it.copy(note = newNote) }
     }
 
     fun onAccidentChange(isAccident: Boolean) {
-        _uiState.update { it.copy(isAccident = isAccident) }
+        updateLoadedState { it.copy(isAccident = isAccident) }
     }
 
     fun onTypeChange(type: PottyType) {
-        _uiState.update { it.copy(type = type) }
+        updateLoadedState { it.copy(type = type) }
+    }
+
+    private fun updateLoadedState(update: (PottyLogUiState.Loaded) -> PottyLogUiState.Loaded) {
+        _uiState.update { state ->
+            if (state is PottyLogUiState.Loaded) update(state) else state
+        }
     }
 
     fun save() {
+        val currentState = _uiState.value
+        if (currentState !is PottyLogUiState.Loaded) return
+
         viewModelScope.launch {
-            val currentState = _uiState.value
             val logToSave = if (currentState.isEditMode && originalLog != null) {
                 originalLog!!.copy(
                     note = currentState.note,
@@ -94,13 +108,12 @@ class PottyLogViewModel @Inject constructor(
             _saveEvent.emit(SaveResult(currentState.isAccident))
 
             if (!currentState.isEditMode) {
-                _uiState.update { 
-                    it.copy(
-                        note = "",
-                        isAccident = false,
-                        type = PottyType.PEE
-                    )
-                }
+                _uiState.value = PottyLogUiState.Loaded(
+                    note = "",
+                    isAccident = false,
+                    type = PottyType.PEE,
+                    isEditMode = false
+                )
             }
         }
     }

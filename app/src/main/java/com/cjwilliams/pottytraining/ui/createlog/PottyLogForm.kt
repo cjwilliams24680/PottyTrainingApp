@@ -23,7 +23,7 @@ import com.cjwilliams.pottytraining.domain.PottyType
 
 @Composable
 fun PottyLogForm(
-    uiState: PottyLogUiState,
+    uiState: PottyLogUiState.Loaded,
     onNoteChange: (String) -> Unit,
     onAccidentChange: (Boolean) -> Unit,
     onTypeChange: (PottyType) -> Unit,
