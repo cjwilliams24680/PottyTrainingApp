@@ -21,8 +21,10 @@ import javax.inject.Inject
 sealed interface PottyLogUiState {
 
     data object Uninitialized : PottyLogUiState
-    data object Loading : PottyLogUiState
+    data class Loading(val id: Int?) : PottyLogUiState
     data class Loaded(
+        val id: Int? = null,
+        val timestamp: Long? = null,
         val note: String = "",
         val isAccident: Boolean = false,
         val type: PottyType = PottyType.PEE,
@@ -42,28 +44,30 @@ class PottyLogViewModel @Inject constructor(
     private val _saveEvent = MutableSharedFlow<SaveResult>()
     val saveEvent: SharedFlow<SaveResult> = _saveEvent.asSharedFlow()
 
-    private var originalLog: PottyLog? = null
-
     fun initialize(id: Int?) {
-        if (uiState.value == Uninitialized) return
+        if (uiState.value != Uninitialized) return
 
         if (id != null) {
-            _uiState.value = PottyLogUiState.Loading
+            _uiState.value = PottyLogUiState.Loading(id)
             viewModelScope.launch {
                 repository.getLogById(id).firstOrNull()?.let { log ->
-                    originalLog = log
                     _uiState.value = PottyLogUiState.Loaded(
+                        id = log.id,
                         note = log.note,
                         isAccident = log.isAccident,
                         type = log.type,
-                        isEditMode = true
+                        isEditMode = true,
+                        timestamp = log.timestamp,
                     )
                 } ?: run {
                     _uiState.value = PottyLogUiState.BlockingError
                 }
             }
         } else {
-            _uiState.value = PottyLogUiState.Loaded(isEditMode = false)
+            _uiState.value = PottyLogUiState.Loaded(
+                id = id,
+                isEditMode = false,
+            )
         }
     }
 
@@ -90,31 +94,16 @@ class PottyLogViewModel @Inject constructor(
         if (currentState !is PottyLogUiState.Loaded) return
 
         viewModelScope.launch {
-            val logToSave = if (currentState.isEditMode && originalLog != null) {
-                originalLog!!.copy(
-                    note = currentState.note,
-                    isAccident = currentState.isAccident,
-                    type = currentState.type
-                )
-            } else {
+            repository.upsertLog(
                 PottyLog(
-                    timestamp = System.currentTimeMillis(),
+                    id = currentState.id ?: 0,
+                    timestamp = currentState.timestamp ?: System.currentTimeMillis(),
                     note = currentState.note,
                     isAccident = currentState.isAccident,
                     type = currentState.type
                 )
-            }
-            repository.upsertLog(logToSave)
+            )
             _saveEvent.emit(SaveResult(currentState.isAccident))
-
-            if (!currentState.isEditMode) {
-                _uiState.value = PottyLogUiState.Loaded(
-                    note = "",
-                    isAccident = false,
-                    type = PottyType.PEE,
-                    isEditMode = false
-                )
-            }
         }
     }
 
