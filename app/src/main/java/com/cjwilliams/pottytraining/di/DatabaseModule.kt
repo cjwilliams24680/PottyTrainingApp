@@ -22,7 +22,11 @@ object DatabaseModule {
             context,
             PottyDatabase::class.java,
             "potty_database"
-        ).build()
+        )
+            // Logs are a local cache of server state, so a schema change can drop
+            // and refetch rather than migrate.
+            .fallbackToDestructiveMigration(dropAllTables = true)
+            .build()
     }
 
     @Provides
