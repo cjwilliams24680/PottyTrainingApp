@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The dev server runs over plain HTTP on the host machine, which the platform blocks by
+  default. This stays in the debug source set so release builds keep cleartext disabled.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application android:usesCleartextTraffic="true" />
+
+</manifest>

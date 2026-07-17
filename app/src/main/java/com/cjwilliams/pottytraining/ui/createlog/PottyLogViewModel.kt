@@ -2,6 +2,7 @@ package com.cjwilliams.pottytraining.ui.createlog
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cjwilliams.pottytraining.domain.AppResult
 import com.cjwilliams.pottytraining.domain.PottyLog
 import com.cjwilliams.pottytraining.domain.PottyRepository
 import com.cjwilliams.pottytraining.domain.PottyType
@@ -16,15 +17,17 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
+import java.time.Instant
 import javax.inject.Inject
 
 sealed interface PottyLogUiState {
 
     data object Uninitialized : PottyLogUiState
-    data class Loading(val id: Int?) : PottyLogUiState
+    data class Loading(val id: String?) : PottyLogUiState
     data class Loaded(
-        val id: Int? = null,
-        val timestamp: Long? = null,
+        val id: String? = null,
+        val timestamp: Instant? = null,
         val note: String = "",
         val isAccident: Boolean = false,
         val type: PottyType = PottyType.PEE,
@@ -44,7 +47,7 @@ class PottyLogViewModel @Inject constructor(
     private val _saveEvent = MutableSharedFlow<SaveResult>()
     val saveEvent: SharedFlow<SaveResult> = _saveEvent.asSharedFlow()
 
-    fun initialize(id: Int?) {
+    fun initialize(id: String?) {
         if (uiState.value != Uninitialized) return
 
         if (id != null) {
@@ -53,7 +56,7 @@ class PottyLogViewModel @Inject constructor(
                 repository.getLogById(id).firstOrNull()?.let { log ->
                     _uiState.value = PottyLogUiState.Loaded(
                         id = log.id,
-                        note = log.note,
+                        note = log.note.orEmpty(),
                         isAccident = log.isAccident,
                         type = log.type,
                         isEditMode = true,
@@ -94,16 +97,24 @@ class PottyLogViewModel @Inject constructor(
         if (currentState !is PottyLogUiState.Loaded) return
 
         viewModelScope.launch {
-            repository.upsertLog(
+            val result = repository.saveLog(
                 PottyLog(
-                    id = currentState.id ?: 0,
-                    timestamp = currentState.timestamp ?: System.currentTimeMillis(),
-                    note = currentState.note,
+                    id = currentState.id,
+                    timestamp = currentState.timestamp ?: Instant.now(),
+                    // An empty field means "no note", which the server stores as null.
+                    note = currentState.note.takeIf { it.isNotBlank() },
                     isAccident = currentState.isAccident,
                     type = currentState.type
                 )
             )
-            _saveEvent.emit(SaveResult(currentState.isAccident))
+
+            // TODO: surface save failures in the UI phase; navigating away on an error
+            // would tell the user the log was saved when it wasn't.
+            if (result is AppResult.Success) {
+                _saveEvent.emit(SaveResult(currentState.isAccident))
+            } else {
+                Timber.w("Save failed: %s", result)
+            }
         }
     }
 

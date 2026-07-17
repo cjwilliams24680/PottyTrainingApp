@@ -1,0 +1,5 @@
+mutation UpdateLog($input: UpdateLogInput!) {
+  updateLog(input: $input) {
+    ...PottyLogFields
+  }
+}

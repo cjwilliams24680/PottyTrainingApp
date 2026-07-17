@@ -17,7 +17,7 @@ import com.cjwilliams.pottytraining.R
 
 @Composable
 fun PottyLogScreen(
-    logId: Int? = null,
+    logId: String? = null,
     onSaveSuccess: (PottyLogViewModel.SaveResult) -> Unit,
     viewModel: PottyLogViewModel = hiltViewModel()
 ) {

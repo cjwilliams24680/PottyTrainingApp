@@ -1,0 +1,7 @@
+fragment PottyLogFields on PottyLog {
+  id
+  type
+  timestamp
+  isAccident
+  note
+}

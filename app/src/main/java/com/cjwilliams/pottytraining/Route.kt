@@ -10,6 +10,12 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 sealed interface Route {
+    /** Shown only while signed out, in their own nav graph outside the main scaffold. */
+    @Serializable
+    data object Login : Route
+    @Serializable
+    data object Signup : Route
+
     @Serializable
     data object CreateLog : Route
     @Serializable
@@ -19,7 +25,7 @@ sealed interface Route {
     @Serializable
     data class Success(val isAccident: Boolean) : Route
     @Serializable
-    data class EditLog(val logId: Int) : Route
+    data class EditLog(val logId: String) : Route
 }
 
 data class TopLevelRoute<T : Any>(

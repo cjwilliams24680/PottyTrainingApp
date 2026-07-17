@@ -27,8 +27,35 @@
     <string name="log_options_title">Log Options</string>
     <string name="edit_log_action">Edit Log</string>
     <string name="delete_log_action">Delete Log</string>
+    <string name="delete_log_coming_soon">Deleting logs isn\'t available yet — coming soon!</string>
     <string name="accident_label">(Accident)</string>
 
-    <string name="settings_coming_soon">Settings Screen (Coming Soon)</string>
+    <string name="history_empty_title">No logs yet</string>
+    <string name="history_empty_message">Logs you create will appear here. Pull down to check for new ones.</string>
+    <string name="history_error_title">Couldn\'t load your history</string>
+    <string name="retry_button">Try Again</string>
+
     <string name="error_loading_log">Error: Could not find the requested log.</string>
+    <string name="logout_button">Log Out</string>
+
+    <string name="login_title">Welcome Back</string>
+    <string name="signup_title">Create Account</string>
+    <string name="email_label">Email</string>
+    <string name="password_label">Password</string>
+    <string name="confirm_password_label">Confirm Password</string>
+    <string name="sign_in_button">Sign In</string>
+    <string name="create_account_action">Create Account</string>
+    <string name="forgot_password_action">Forgot Password?</string>
+    <string name="forgot_password_not_implemented">Password reset isn\'t available yet.</string>
+    <string name="passwords_do_not_match">Passwords don\'t match.</string>
+    <string name="show_password">Show password</string>
+    <string name="hide_password">Hide password</string>
+
+    <string name="login_failed_title">Sign In Failed</string>
+    <string name="signup_failed_title">Couldn\'t Create Account</string>
+    <string name="error_invalid_credentials">Invalid email or password.</string>
+    <string name="error_could_not_create_account">That email may already be registered. Try signing in instead.</string>
+    <string name="error_network">Couldn\'t reach the server. Check your connection and try again.</string>
+    <string name="error_generic">Something went wrong. Please try again.</string>
+    <string name="ok_button">OK</string>
 </resources>

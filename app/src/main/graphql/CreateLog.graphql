@@ -1,0 +1,5 @@
+mutation CreateLog($input: CreateLogInput!) {
+  createLog(input: $input) {
+    ...PottyLogFields
+  }
+}
