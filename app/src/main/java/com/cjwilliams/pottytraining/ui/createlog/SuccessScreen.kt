@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -64,7 +65,7 @@ fun SuccessScreen(
         
         Button(
             onClick = onContinue,
-            modifier = Modifier.fillMaxSize(0.6f)
+            modifier = Modifier.fillMaxWidth(0.6f)
         ) {
             Text(stringResource(R.string.continue_button))
         }
