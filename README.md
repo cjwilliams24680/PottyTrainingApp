@@ -6,7 +6,7 @@ The app is a Kotlin + Jetpack Compose client backed by a companion [NestJS Graph
 
 ## Screenshots
 
-<!-- TODO: add screenshots / demo GIF (create log, history, login) -->
+<img width="323" height="720" alt="Screen_recording_20260717_163419" src="https://github.com/user-attachments/assets/49127c70-80a2-40fd-9b9d-96497f90f153" />
 
 ## Tech stack
 
