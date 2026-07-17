@@ -24,6 +24,10 @@ class FakePottyRepository : PottyRepository {
     var deleteResult: AppResult<Unit> = AppResult.Success(Unit)
     var deletedLogs = mutableListOf<PottyLog>()
 
+    /** When set, [saveLog] fails with this error instead of echoing the log back. */
+    var saveError: AppError? = null
+    var savedLogs = mutableListOf<PottyLog>()
+
     override fun getLogs(): Flow<List<PottyLog>> = logs
 
     override fun getLogById(id: String): Flow<PottyLog?> = MutableStateFlow(logs.value.firstOrNull { it.id == id })
@@ -34,7 +38,10 @@ class FakePottyRepository : PottyRepository {
         return refreshResult
     }
 
-    override suspend fun saveLog(log: PottyLog): AppResult<PottyLog> = AppResult.Success(log)
+    override suspend fun saveLog(log: PottyLog): AppResult<PottyLog> {
+        savedLogs += log
+        return saveError?.let { AppResult.Error(it) } ?: AppResult.Success(log)
+    }
 
     override suspend fun deleteLog(log: PottyLog): AppResult<Unit> {
         deletedLogs += log

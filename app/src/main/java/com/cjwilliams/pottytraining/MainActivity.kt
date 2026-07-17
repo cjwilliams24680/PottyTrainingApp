@@ -166,10 +166,10 @@ private fun MainAppScaffold() {
                 SuccessScreen(
                     isAccident = route.isAccident,
                     onContinue = {
+                        navController.popBackStack(Route.CreateLog, true)
                         navController.navigate(Route.History) {
                             popUpTo(navController.graph.findStartDestination().id)
                             launchSingleTop = true
-                            restoreState = false
                         }
                     }
                 )
