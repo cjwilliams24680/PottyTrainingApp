@@ -18,13 +18,13 @@ With that set:
 
 ```bash
 ./gradlew testDebugUnitTest                 # local JVM unit tests
-./gradlew testDebugUnitTest --tests "com.cjwilliams.pottytraining.ExampleUnitTest"   # single test class
+./gradlew testDebugUnitTest --tests "com.cjwilliams.pottytraining.ui.history.HistoryViewModelTest"   # single test class
 ./gradlew assembleDebug                     # build debug APK
 ./gradlew lint                              # Android lint
 ./gradlew connectedDebugAndroidTest         # instrumented tests (needs a running emulator/device)
 ```
 
-Only the two placeholder `Example*Test` files exist so far; there is no real test suite yet.
+The unit test suite lives under `app/src/test` and covers the repository, GraphQL mappers, auth interceptors, and view models, using hand-rolled fakes and Turbine for Flow assertions.
 
 ## Architecture
 
