@@ -16,6 +16,12 @@ sealed interface Route {
     @Serializable
     data object Signup : Route
 
+    /** Nested graphs so detail screens keep their tab's bottom-nav item selected. */
+    @Serializable
+    data object CreateLogGraph : Route
+    @Serializable
+    data object HistoryGraph : Route
+
     @Serializable
     data object CreateLog : Route
     @Serializable
@@ -35,7 +41,7 @@ data class TopLevelRoute<T : Any>(
 )
 
 val TOP_LEVEL_ROUTES = listOf(
-    TopLevelRoute(R.string.create_log_title, Route.CreateLog, Icons.Default.Add),
-    TopLevelRoute(R.string.history_title, Route.History, Icons.Default.History),
+    TopLevelRoute(R.string.create_log_title, Route.CreateLogGraph, Icons.Default.Add),
+    TopLevelRoute(R.string.history_title, Route.HistoryGraph, Icons.Default.History),
     TopLevelRoute(R.string.settings_title, Route.Settings, Icons.Default.Settings)
 )

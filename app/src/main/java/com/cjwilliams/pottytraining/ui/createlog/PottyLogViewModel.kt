@@ -111,6 +111,12 @@ class PottyLogViewModel @Inject constructor(
             // TODO: surface save failures in the UI phase; navigating away on an error
             // would tell the user the log was saved when it wasn't.
             if (result is AppResult.Success) {
+                // The create form's back stack entry (and this view model) survives
+                // navigating away, so reset it or the stale form resurfaces when the
+                // user returns to the tab. Edit mode navigates back and is destroyed.
+                if (!currentState.isEditMode) {
+                    _uiState.value = PottyLogUiState.Loaded(isEditMode = false)
+                }
                 _saveEvent.emit(SaveResult(currentState.isAccident))
             } else {
                 Timber.w("Save failed: %s", result)

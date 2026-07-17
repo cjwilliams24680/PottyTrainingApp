@@ -34,6 +34,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.cjwilliams.pottytraining.ui.auth.AuthNavHost
@@ -80,9 +81,11 @@ private fun MainAppScaffold() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
     val titleRes = currentDestination?.getTitle()
-    val isTopLevel = TOP_LEVEL_ROUTES.any { topLevelRoute ->
-        currentDestination?.hasRoute(topLevelRoute.route::class) == true
-    }
+    // TOP_LEVEL_ROUTES now holds graph routes, but currentDestination is always a
+    // leaf, so top-level-ness is checked against each tab's start destination.
+    val isTopLevel = currentDestination?.let {
+        it.hasRoute<Route.CreateLog>() || it.hasRoute<Route.History>() || it.hasRoute<Route.Settings>()
+    } == true
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -136,7 +139,7 @@ private fun MainAppScaffold() {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = Route.CreateLog,
+            startDestination = Route.CreateLogGraph,
             // consumeWindowInsets keeps imePadding from re-adding the bottom-bar
             // inset already applied via innerPadding.
             modifier = Modifier
@@ -144,44 +147,51 @@ private fun MainAppScaffold() {
                 .consumeWindowInsets(innerPadding)
                 .imePadding()
         ) {
-            composable<Route.CreateLog> {
-                PottyLogScreen(
-                    onSaveSuccess = { result ->
-                        navController.navigate(Route.Success(result.isAccident))
-                    }
-                )
+            navigation<Route.CreateLogGraph>(startDestination = Route.CreateLog) {
+                composable<Route.CreateLog> {
+                    PottyLogScreen(
+                        onSaveSuccess = { result ->
+                            navController.navigate(Route.Success(result.isAccident))
+                        }
+                    )
+                }
+                composable<Route.Success> { backStackEntry ->
+                    val route = backStackEntry.toRoute<Route.Success>()
+                    SuccessScreen(
+                        isAccident = route.isAccident,
+                        onContinue = {
+                            navController.popBackStack(Route.CreateLog, true)
+                            navController.navigate(Route.HistoryGraph) {
+                                // No saveState: Success must not be restored when the
+                                // user later returns to the Create Log tab. The view
+                                // model resets the form itself after a create save.
+                                popUpTo(navController.graph.findStartDestination().id)
+                                launchSingleTop = true
+                            }
+                        }
+                    )
+                }
             }
-            composable<Route.History> {
-                HistoryScreen(
-                    onEditLog = { logId ->
-                        navController.navigate(Route.EditLog(logId))
-                    }
-                )
+            navigation<Route.HistoryGraph>(startDestination = Route.History) {
+                composable<Route.History> {
+                    HistoryScreen(
+                        onEditLog = { logId ->
+                            navController.navigate(Route.EditLog(logId))
+                        }
+                    )
+                }
+                composable<Route.EditLog> { backStackEntry ->
+                    val route = backStackEntry.toRoute<Route.EditLog>()
+                    PottyLogScreen(
+                        logId = route.logId,
+                        onSaveSuccess = {
+                            navController.popBackStack()
+                        }
+                    )
+                }
             }
             composable<Route.Settings> {
                 SettingsScreen()
-            }
-            composable<Route.Success> { backStackEntry ->
-                val route = backStackEntry.toRoute<Route.Success>()
-                SuccessScreen(
-                    isAccident = route.isAccident,
-                    onContinue = {
-                        navController.popBackStack(Route.CreateLog, true)
-                        navController.navigate(Route.History) {
-                            popUpTo(navController.graph.findStartDestination().id)
-                            launchSingleTop = true
-                        }
-                    }
-                )
-            }
-            composable<Route.EditLog> { backStackEntry ->
-                val route = backStackEntry.toRoute<Route.EditLog>()
-                PottyLogScreen(
-                    logId = route.logId,
-                    onSaveSuccess = {
-                        navController.popBackStack()
-                    }
-                )
             }
         }
     }

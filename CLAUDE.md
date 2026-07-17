@@ -38,13 +38,17 @@ Hilt wires it together: `DatabaseModule` provides the Room database and DAO, `Re
 
 ### Navigation
 
-Routes are `@Serializable` types in a sealed `Route` interface (`Route.kt`) and navigated type-safely — `composable<Route.EditLog>` with `backStackEntry.toRoute<Route.EditLog>()`, not string routes. Adding a screen means touching three places:
+Routes are `@Serializable` types in a sealed `Route` interface (`Route.kt`) and navigated type-safely — `composable<Route.EditLog>` with `backStackEntry.toRoute<Route.EditLog>()`, not string routes.
 
-1. `Route.kt` — add the `@Serializable` type, plus an entry in `TOP_LEVEL_ROUTES` if it belongs in the bottom nav bar.
-2. `MainActivity`'s `NavHost` — add the `composable<...>` block.
-3. `NavDestination.getTitle()` at the bottom of `MainActivity` — maps each route to its top app bar title string resource. A route missing here renders with no top bar.
+Bottom-nav tabs that own detail screens are **nested graphs** (`navigation<Route.CreateLogGraph>`, `navigation<Route.HistoryGraph>`), and `TOP_LEVEL_ROUTES` holds the *graph* routes. That's what keeps a tab's bottom-nav item selected on its detail screens: the `NavigationBarItem` `selected` check walks `currentDestination.hierarchy`, which only contains the tab's route if the detail screen is nested inside its graph. A detail screen added at the top level of the `NavHost` will deselect all tabs while shown.
 
-`TOP_LEVEL_ROUTES` also drives back-arrow visibility: destinations in that list are treated as top-level and get no up button.
+Adding a screen means touching three places:
+
+1. `Route.kt` — add the `@Serializable` type. A new tab needs a graph route in `TOP_LEVEL_ROUTES` (or the plain route, like `Settings`, if it has no detail screens).
+2. `MainActivity`'s `NavHost` — add the `composable<...>` block, inside the owning tab's `navigation<...>` graph if it's a detail screen.
+3. `NavDestination.getTitle()` at the bottom of `MainActivity` — maps each leaf route to its top app bar title string resource. A route missing here renders with no top bar.
+
+Back-arrow visibility comes from the `isTopLevel` check in `MainAppScaffold`, which lists the tab *leaf* routes explicitly (`CreateLog`/`History`/`Settings`) — the current destination is always a leaf, never a graph route, so a new tab's start destination must be added there too.
 
 ### View model state pattern
 
